@@ -1,6 +1,6 @@
 module todo_app
 
-go 1.22.1
+go 1.21
 
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect
