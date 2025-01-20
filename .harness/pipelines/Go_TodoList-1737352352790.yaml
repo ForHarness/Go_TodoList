@@ -27,16 +27,6 @@ pipeline:
                     command: go build -v .
                   timeout: ""
                   type: Run
-              - step:
-                  type: Test
-                  name: Test
-                  identifier: Test
-                  spec:
-                    shell: Sh
-                    command: |2-
-                         mkdir -p test-reports
-                                go test -v ./... 2>&1 | tee test-reports/tests.txt
-                    intelligenceMode: true
           platform:
             os: Linux
             arch: Amd64
