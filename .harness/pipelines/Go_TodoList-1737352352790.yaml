@@ -36,7 +36,7 @@ pipeline:
                       connectorRef: account.Github
                       buildIdentifier: <+input>
                       testReportPaths:
-                        - test-reports/**/*.xml
+                        - .coverage.out
                     enabled: true
                     timeout: 10m
           platform:
