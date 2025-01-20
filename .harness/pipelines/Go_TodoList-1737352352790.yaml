@@ -28,17 +28,19 @@ pipeline:
                   timeout: ""
                   type: Run
               - step:
-                  identifier: testIntelligence
-                  name: Test Intelligence
-                  type: Test
+                  type: Run
+                  name: Test
+                  identifier: Test
                   spec:
-                    testResults:
-                      connectorRef: account.Github
-                      buildIdentifier: <+input>
-                      testReportPaths:
-                        - .coverage.out
-                    enabled: true
-                    timeout: 10m
+                    shell: Sh
+                    command: go test -v .
+              - step:
+                  type: Run
+                  name: Package
+                  identifier: Package
+                  spec:
+                    shell: Sh
+                    command: go build main.go
           platform:
             os: Linux
             arch: Amd64
