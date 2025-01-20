@@ -21,12 +21,20 @@ pipeline:
             steps:
               - step:
                   identifier: gobuild
-                  name: go_build
+                  name: Build
                   spec:
                     shell: Sh
                     command: go build -v .
                   timeout: ""
                   type: Run
+              - step:
+                  type: Test
+                  name: Test
+                  identifier: Test
+                  spec:
+                    shell: Sh
+                    command: go test -v .
+                    intelligenceMode: true
           platform:
             os: Linux
             arch: Amd64
