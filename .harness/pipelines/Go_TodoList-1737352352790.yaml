@@ -27,6 +27,18 @@ pipeline:
                     command: go build -v .
                   timeout: ""
                   type: Run
+              - step:
+                  identifier: testIntelligence
+                  name: Test Intelligence
+                  type: Test
+                  spec:
+                    testResults:
+                      connectorRef: account.Github
+                      buildIdentifier: <+input>
+                      testReportPaths:
+                        - test-reports/**/*.xml
+                    enabled: true
+                    timeout: 10m
           platform:
             os: Linux
             arch: Amd64
