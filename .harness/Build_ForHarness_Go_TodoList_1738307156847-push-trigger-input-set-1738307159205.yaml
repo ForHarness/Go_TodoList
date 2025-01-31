@@ -1,0 +1,14 @@
+inputSet:
+  name: Build_ForHarness_Go_TodoList_1738307156847-push-trigger-input-set
+  identifier: Build_ForHarness_Go_TodoList_1738307156847pushtriggerinputset
+  orgIdentifier: default
+  projectIdentifier: _Tier_GO
+  pipeline:
+    identifier: Build_ForHarness_Go_TodoList_1738307156847
+    properties:
+      ci:
+        codebase:
+          build:
+            type: branch
+            spec:
+              branch: <+trigger.branch>
