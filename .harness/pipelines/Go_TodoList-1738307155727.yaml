@@ -11,188 +11,100 @@ pipeline:
         repoName: ForHarness/Go_TodoList
   stages:
     - stage:
-        name: deploy-ssh
-        identifier: deployssh
-        description: ""
-        type: Deployment
+        identifier: build
+        name: build
         spec:
-          deploymentType: Ssh
-          service:
-            serviceRef: harness_ssh
-            serviceInputs:
-              serviceDefinition:
-                type: Ssh
-                spec:
-                  artifacts:
-                    primary:
-                      primaryArtifactRef: <+input>
-                      sources: <+input>
-          environment:
-            environmentRef: harnessdevenv
-            deployToAll: false
-            infrastructureDefinitions:
-              - identifier: harness_remoteinstance
-          execution:
-            steps:
-              - stepGroup:
-                  name: Phase
-                  identifier: Phase
-                  strategy:
-                    repeat:
-                      items: <+stage.output.hosts>
-                      maxConcurrency: 1
-                      partitionSize: 1
-                      unit: Count
-                  steps:
-                    - stepGroup:
-                        name: Phase Group
-                        identifier: phase_group
-                        strategy:
-                          repeat:
-                            items: <+repeat.partition>
-                        steps:
-                          - step:
-                              name: Deploy
-                              type: Command
-                              identifier: Deploy
-                              timeout: 10m
-                              spec:
-                                onDelegate: false
-                                environmentVariables: []
-                                outputVariables: []
-                                commandUnits:
-                                  - identifier: Setup_Runtime_Paths
-                                    name: Setup Runtime Paths
-                                    type: Script
-                                    spec:
-                                      shell: Bash
-                                      source:
-                                        type: Inline
-                                        spec:
-                                          script: |-
-                                            # Execute as root and pass environment variables
-                                            # su -p -
-
-                                            # Execute as root via user credentials (with root privileges)
-                                            # sudo -E su -p -
-
-                                            # Creating runtime, backup and staging folders:
-
-                                            mkdir -p $HOME/<+service.name>/<+env.name>/runtime
-                                            mkdir -p $HOME/<+service.name>/<+env.name>/backup
-                                            mkdir -p $HOME/<+service.name>/<+env.name>/staging
-                                  - identifier: Copy_Artifact
-                                    name: Copy Artifact
-                                    type: Copy
-                                    spec:
-                                      sourceType: Artifact
-                                      destinationPath: $HOME/<+service.name>/<+env.name>
-                                  - identifier: Copy_Config
-                                    name: Copy Config
-                                    type: Copy
-                                    spec:
-                                      sourceType: Artifact
-                                      destinationPath: $HOME/<+service.name>/<+env.name>
-            rollbackSteps:
-              - stepGroup:
-                  name: Phase
-                  identifier: Phase
-                  strategy:
-                    repeat:
-                      items: <+stage.output.hosts>
-                      maxConcurrency: 1
-                      partitionSize: 1
-                      unit: Count
-                  steps:
-                    - stepGroup:
-                        name: Phase Group Rollback
-                        identifier: phase_group_rollback
-                        strategy:
-                          repeat:
-                            items: <+repeat.partition>
-                        steps:
-                          - step:
-                              name: Rollback
-                              identifier: Rollback
-                              type: Command
-                              timeout: 10m
-                              spec:
-                                onDelegate: false
-                                environmentVariables: []
-                                outputVariables: []
-                                commandUnits:
-                                  - identifier: Setup_Runtime_Paths_Rollback
-                                    name: Setup Runtime Paths Rollback
-                                    type: Script
-                                    spec:
-                                      shell: Bash
-                                      source:
-                                        type: Inline
-                                        spec:
-                                          script: |-
-                                            # Execute as root and pass environment variables
-                                            # su -p -
-
-                                            # Execute as root via user credentials (with root privileges)
-                                            # sudo -E su -p -
-
-                                            # Creating runtime, backup and staging folders:
-
-                                            mkdir -p $HOME/<+service.name>/<+env.name>/runtime
-                                            mkdir -p $HOME/<+service.name>/<+env.name>/backup
-                                            mkdir -p $HOME/<+service.name>/<+env.name>/staging
-                                  - identifier: Copy_Artifact_Rollback
-                                    name: Copy Artifact Rollback
-                                    type: Copy
-                                    spec:
-                                      sourceType: Artifact
-                                      destinationPath: $HOME/<+service.name>/<+env.name>
-                                  - identifier: Copy_Config_Rollback
-                                    name: Copy Config Rollback
-                                    type: Copy
-                                    spec:
-                                      sourceType: Artifact
-                                      destinationPath: $HOME/<+service.name>/<+env.name>
-        tags: {}
-        failureStrategies:
-          - onFailure:
-              errors:
-                - AllErrors
-              action:
-                type: StageRollback
-    - stage:
-        name: Run_Deployment_Script
-        identifier: Run_Deployment_Script
-        description: ""
-        type: Custom
-        spec:
+          caching:
+            enabled: true
+          cloneCodebase: true
           execution:
             steps:
               - step:
-                  type: ShellScript
-                  name: ShellScript_1
-                  identifier: ShellScript_1
+                  identifier: gobuild
+                  name: go_build
                   spec:
-                    shell: Bash
-                    executionTarget:
-                      host: ip-172-31-17-216.ec2.internal
-                      connectorRef: harness_sshprivatekey
-                      workingDirectory: /
-                    source:
-                      type: Inline
+                    connectorRef: account.harnessImage
+                    image: golang:1.22.1-alpine
+                    shell: Sh
+                    command: go build
+                  timeout: ""
+                  type: Run
+              - step:
+                  identifier: gotestcoverage
+                  name: go_test_coverage
+                  spec:
+                    connectorRef: account.harnessImage
+                    image: golang:1.22.1-alpine
+                    shell: Sh
+                    command: go test -coverprofile=coverage.out ./...
+                  timeout: ""
+                  type: Run
+              - step:
+                  identifier: gotestreport
+                  name: go_test_report
+                  spec:
+                    connectorRef: account.harnessImage
+                    image: golang:1.22.1-alpine
+                    shell: Sh
+                    command: "export GOBIN=/home/harness/go/bin\n\t\texport PATH=/home/harness/go/bin:$PATH\n\t\techo $PATH\n\t\tgo install github.com/jstemmer/go-junit-report/v2@latest\n\t\tgo test -v 2>&1 ./... | go-junit-report -set-exit-code > report.xml"
+                    reports:
+                      type: JUnit
                       spec:
-                        script: |
-                          ls -la 
-                          cd ~
-                          ls -la
-                          chmod +x deploy_app.sh
-                          sudo ./deploy_app.sh
-                    environmentVariables: []
-                    outputVariables: []
-                  timeout: 10m
-          environment:
-            environmentRef: harnessdevenv
-            deployToAll: false
-            infrastructureDefinitions:
-              - identifier: harness_remoteinstance
-        tags: {}
+                        paths:
+                          - /harness/report.xml
+                  timeout: ""
+                  type: Run
+              - step:
+                  type: Sonarqube
+                  name: Sonarqube_1
+                  identifier: Sonarqube_1
+                  spec:
+                    mode: orchestration
+                    config: default
+                    target:
+                      type: repository
+                      detection: auto
+                    advanced:
+                      log:
+                        level: info
+                    auth:
+                      access_token: 5ca7a9d7c023ff2d022e32d71f7b6cb1e97c8f1a
+                      domain: https://sonarcloud.io/
+                      ssl: false
+                    tool:
+                      project_key: sonarintegration-1_finalcicdbackend
+              - step:
+                  type: Semgrep
+                  name: Security Scan
+                  identifier: Security_Scan
+                  spec:
+                    mode: orchestration
+                    config: default
+                    target:
+                      type: repository
+                      detection: auto
+                    advanced:
+                      log:
+                        level: info
+              - step:
+                  type: Run
+                  name: Package
+                  identifier: Package
+                  spec:
+                    shell: Sh
+                    command: go build -v .
+              - step:
+                  type: ArtifactoryUpload
+                  name: ArtifactoryUpload
+                  identifier: ArtifactoryUpload
+                  spec:
+                    connectorRef: jfrog
+                    target: harnessshubham-libs-snapshot-local
+                    sourcePath: "*.exe"
+          platform:
+            os: Linux
+            arch: Amd64
+          runtime:
+            type: Cloud
+            spec: {}
+        type: CI
