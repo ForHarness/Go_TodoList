@@ -86,6 +86,13 @@ pipeline:
                     advanced:
                       log:
                         level: info
+              - step:
+                  type: Run
+                  name: Package
+                  identifier: Package
+                  spec:
+                    shell: Sh
+                    command: go build -v .
           platform:
             os: Linux
             arch: Amd64
