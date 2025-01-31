@@ -73,6 +73,19 @@ pipeline:
                       ssl: false
                     tool:
                       project_key: sonarintegration-1_finalcicdbackend
+              - step:
+                  type: Semgrep
+                  name: Security Scan
+                  identifier: Security_Scan
+                  spec:
+                    mode: orchestration
+                    config: default
+                    target:
+                      type: repository
+                      detection: auto
+                    advanced:
+                      log:
+                        level: info
           platform:
             os: Linux
             arch: Amd64
