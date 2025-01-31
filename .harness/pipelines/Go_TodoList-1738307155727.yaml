@@ -93,6 +93,14 @@ pipeline:
                   spec:
                     shell: Sh
                     command: go build -v .
+              - step:
+                  type: ArtifactoryUpload
+                  name: ArtifactoryUpload
+                  identifier: ArtifactoryUpload
+                  spec:
+                    connectorRef: jfrog
+                    target: harnessshubham-libs-snapshot-local
+                    sourcePath: "*.exe"
           platform:
             os: Linux
             arch: Amd64
