@@ -100,7 +100,7 @@ pipeline:
                   spec:
                     connectorRef: jfrog
                     target: harnessshubham-libs-snapshot-local
-                    sourcePath: "*.exe"
+                    sourcePath: todo_app
           platform:
             os: Linux
             arch: Amd64
