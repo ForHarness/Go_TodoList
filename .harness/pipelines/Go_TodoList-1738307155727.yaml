@@ -26,7 +26,7 @@ pipeline:
                     connectorRef: account.harnessImage
                     image: golang:1.22.1-alpine
                     shell: Sh
-                    command: go build
+                    command: go build -o .
                   timeout: ""
                   type: Run
               - step:
@@ -92,7 +92,7 @@ pipeline:
                   identifier: Package
                   spec:
                     shell: Sh
-                    command: go build -v .
+                    command: go build -o .
               - step:
                   type: ArtifactoryUpload
                   name: ArtifactoryUpload
