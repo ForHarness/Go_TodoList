@@ -94,13 +94,15 @@ pipeline:
                     shell: Sh
                     command: go build -o .
               - step:
-                  type: ArtifactoryUpload
-                  name: ArtifactoryUpload
-                  identifier: ArtifactoryUpload
+                  type: BuildAndPushDockerRegistry
+                  name: BuildAndPushDockerRegistry_1
+                  identifier: BuildAndPushDockerRegistry_1
                   spec:
-                    connectorRef: jfrog
-                    target: harnessshubham-libs-snapshot-local
-                    sourcePath: todo_app
+                    connectorRef: account.harnessImage
+                    repo: shubhamchav/gotodolist
+                    tags:
+                      - latest
+                    caching: true
           platform:
             os: Linux
             arch: Amd64
@@ -108,124 +110,3 @@ pipeline:
             type: Cloud
             spec: {}
         type: CI
-    - stage:
-        name: deploy
-        identifier: deploy
-        description: ""
-        type: Deployment
-        spec:
-          deploymentType: Ssh
-          service:
-            serviceRef: goService
-            serviceInputs:
-              serviceDefinition:
-                type: Ssh
-                spec:
-                  artifacts:
-                    primary:
-                      primaryArtifactRef: <+input>
-                      sources: <+input>
-          environment:
-            environmentRef: godevenv
-            deployToAll: false
-            infrastructureDefinitions:
-              - identifier: harness_remoteinstance
-          execution:
-            steps:
-              - stepGroup:
-                  name: Phase
-                  identifier: Phase
-                  strategy:
-                    repeat:
-                      items: <+stage.output.hosts>
-                      maxConcurrency: 1
-                      partitionSize: 1
-                      unit: Count
-                  steps:
-                    - stepGroup:
-                        name: Phase Group
-                        identifier: phase_group
-                        strategy:
-                          repeat:
-                            items: <+repeat.partition>
-                        steps:
-                          - step:
-                              name: Deploy
-                              type: Command
-                              identifier: Deploy
-                              timeout: 10m
-                              spec:
-                                onDelegate: false
-                                environmentVariables: []
-                                outputVariables: []
-                                commandUnits:
-                                  - identifier: Setup_Runtime_Paths
-                                    name: Setup Runtime Paths
-                                    type: Script
-                                    spec:
-                                      shell: Bash
-                                      source:
-                                        type: Inline
-                                        spec:
-                                          script: |-
-                                            # Execute as root and pass environment variables
-                                            # su -p -
-
-                                            # Execute as root via user credentials (with root privileges)
-                                            # sudo -E su -p -
-
-                                            # Creating runtime, backup and staging folders:
-
-                                            mkdir -p $HOME/<+service.name>/<+env.name>/runtime
-                                            mkdir -p $HOME/<+service.name>/<+env.name>/backup
-                                            mkdir -p $HOME/<+service.name>/<+env.name>/staging
-                                  - identifier: Copy_Artifact
-                                    name: Copy Artifact
-                                    type: Copy
-                                    spec:
-                                      sourceType: Artifact
-                                      destinationPath: $HOME/<+service.name>/<+env.name>
-                                  - identifier: Copy_Config
-                                    name: Copy Config
-                                    type: Copy
-                                    spec:
-                                      sourceType: Artifact
-                                      destinationPath: $HOME/<+service.name>/<+env.name>
-            rollbackSteps:
-              - stepGroup:
-                  name: Phase
-                  identifier: Phase
-                  strategy:
-                    repeat:
-                      items: <+stage.output.hosts>
-                      maxConcurrency: 1
-                      partitionSize: 1
-                      unit: Count
-                  steps:
-                    - stepGroup:
-                        name: Phase Group Rollback
-                        identifier: phase_group_rollback
-                        strategy:
-                          repeat:
-                            items: <+repeat.partition>
-                        steps:
-                          - step:
-                              name: Rollback
-                              identifier: Rollback
-                              timeout: 10m
-                              template:
-                                templateRef: account.Default_Install_War_Bash
-                                templateInputs:
-                                  type: Command
-                                  spec:
-                                    environmentVariables:
-                                      - name: DestinationDirectory
-                                        type: String
-                                        value: $HOME/<+service.name>/<+env.name>
-        tags: {}
-        failureStrategies:
-          - onFailure:
-              errors:
-                - AllErrors
-              action:
-                type: StageRollback
