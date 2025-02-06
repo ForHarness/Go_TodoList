@@ -1,0 +1,14 @@
+inputSet:
+  name: Build_ForHarness_Go_TodoList_1738821189828-push-trigger-input-set
+  identifier: Build_ForHarness_Go_TodoList_1738821189828pushtriggerinputset
+  orgIdentifier: default
+  projectIdentifier: Go_With_Kubernetes
+  pipeline:
+    identifier: Build_ForHarness_Go_TodoList_1738821189828
+    properties:
+      ci:
+        codebase:
+          build:
+            type: branch
+            spec:
+              branch: <+trigger.branch>
