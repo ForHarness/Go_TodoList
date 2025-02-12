@@ -110,6 +110,7 @@ pipeline:
             type: Cloud
             spec: {}
         type: CI
+        description: ""
     - stage:
         name: deploy
         identifier: deploy
