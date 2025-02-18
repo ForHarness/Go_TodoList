@@ -121,7 +121,7 @@ func main() {
 
 	// CORS middleware with custom settings
 	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://afa6f6b54a68b4aebb20b50965594778-283912455.us-east-1.elb.amazonaws.com:3000"}, // Frontend ELB
+		AllowedOrigins:   []string{"*"}, // Frontend ELB
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Content-Type"},
 		AllowCredentials: true,
