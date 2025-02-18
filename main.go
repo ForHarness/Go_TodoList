@@ -121,7 +121,7 @@ func main() {
 
 	// CORS middleware with custom settings
 	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"afa6f6b54a68b4aebb20b50965594778-283912455.us-east-1.elb.amazonaws.com:3000"}, // Frontend ELB
+		AllowedOrigins:   []string{"http://afa6f6b54a68b4aebb20b50965594778-283912455.us-east-1.elb.amazonaws.com:3000"}, // Frontend ELB
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Content-Type"},
 		AllowCredentials: true,
@@ -131,7 +131,7 @@ func main() {
 	handler := c.Handler(mux)
 
 	// Start the server
-	port := ":8080"
+	port := "0.0.0.0:8080"
 	fmt.Println("Server started on port", port)
 	log.Fatal(http.ListenAndServe(port, handler))
 }
