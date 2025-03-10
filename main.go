@@ -78,7 +78,7 @@ import (
 
 func main() {
 	// Initialize database connection
-	dsn := "avnadmin:AVNS_p5C3jTfnmzk1y11fED6@tcp(mysql-cf58a23-shubhamdata.g.aivencloud.com:21475)/todo_app"
+	dsn := "avnadmin:AVNS_UWr-wJcElZ5GLHtjWUX@tcp(mysql-1de1931e-tododata.d.aivencloud.com:19068)/todo_app"
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
 		log.Fatal("Error connecting to the database:", err)
